@@ -125,12 +125,14 @@
         }
 
         function uploadFile() {
-          // حذف خودکار فایل پس از یک دقیقه
-setTimeout(() => {
-    URL.revokeObjectURL(url);
-    document.getElementById('linkDisplay').innerHTML = '';
-    document.getElementById('copyBtn').style.display = 'none';
-}, 60 * 1000); // یک دقیقه
+          // حذف خودکار فایل پس از یک دقیق
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+        document.getElementById('linkDisplay').innerHTML = '';
+        document.getElementById('copyBtn').style.display = 'none';
+    }, 10 * 24 * 60 * 60 * 1000); // 10 روز
+}
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
             const maxSizeInBytes = 1024 * 1024 * 1024; // 1 گیگابایت
