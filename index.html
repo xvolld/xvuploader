@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تبدیل فایل به لینک</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            color: #e0e0e0;
+            direction: rtl;
+        }
+        .container {
+            text-align: center;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+        }
+        .description {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #00ffff;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #00ffff;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .custom-file-upload:hover {
+            background: #00e0e0;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #00ffff;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background: #00e0e0;
+        }
+        .progress-bar {
+            display: none;
+            width: 100%;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-bar div {
+            height: 20px;
+            width: 0;
+            background: #00ffff;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+        }
+        #linkDisplay {
+            margin-top: 10px;
+            color: #00ffff;
+        }
+        .copy-btn {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #00ffff;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background: #00e0e0;
+        }
+        #fileName {
+            margin-top: 10px;
+            color: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="description">
+            <p>این ابزار به شما اجازه می‌دهد تا فایل‌های خود را به لینک‌های قابل دانلود تبدیل کنید. محدودیت حجم فایل ۱ گیگابایت است.</p>
+        </div>
+        <h1>تبدیل فایل به لینک</h1>
+        <label for="fileInput" class="custom-file-upload">انتخاب فایل</label>
+        <input type="file" id="fileInput" onchange="displayFileName()">
+        <p id="fileName"></p>
+        <button class="btn" onclick="uploadFile()">آپلود</button>
+        <div class="progress-bar" id="progressBar">
+            <div id="progress"></div>
+        </div>
+        <p id="linkDisplay"></p>
+        <button class="copy-btn" id="copyBtn" onclick="copyLink()">کپی لینک</button>
+    </div>
+
+    <script>
+        function displayFileName() {
+            const fileInput = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            fileName.textContent = fileInput.files[0] ? `فایل انتخاب شده: ${fileInput.files[0].name}` : '';
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const maxSizeInBytes = 1024 * 1024 * 1024; // 1 گیگابایت
+
+            if (file) {
+                if (file.size > maxSizeInBytes) {
+                    alert("حجم فایل از ۱ گیگابایت بیشتر است. لطفاً فایل کوچکتری انتخاب کنید.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                const progressBar = document.getElementById('progress');
+                document.getElementById('progressBar').style.display = 'block';
+                progressBar.style.width = '0%';
+
+                reader.onloadstart = function () {
+                    progressBar.style.width = '0%';
+                };
+
+                reader.onloadend = function () {
+                    const blob = new Blob([reader.result], { type: file.type });
+                    const url = URL.createObjectURL(blob);
+                    document.getElementById('linkDisplay').innerHTML = `<a href="${url}" target="_blank">لینک دانلود</a>`;
+                    document.getElementById('copyBtn').style.display = 'inline-block';
+                    document.getElementById('progressBar').style.display = 'none';
+                };
+
+                reader.onprogress = function (e) {
+                    if (e.lengthComputable) {
+                        const percentLoaded = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percentLoaded + '%';
+                    }
+                };
+
+                let percent = 0;
+                const interval = setInterval(() => {
+                    percent += 1;
+                    progressBar.style.width = percent + '%';
+                    if (percent >= 100) {
+                        clearInterval(interval);
+                    }
+                }, 50); // Adjust the time interval as needed
+
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert("لطفاً یک فایل انتخاب کنید.");
+            }
+        }
+
+        function copyLink() {
+            const linkElement = document.querySelector('#linkDisplay a');
+            if (linkElement) {
+                const link = linkElement.href;
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('لینک به کلیپبورد کپی شد!');
+                }).catch(err => {
+                    alert('کپی لینک به کلیپبورد انجام نشد: ', err);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
